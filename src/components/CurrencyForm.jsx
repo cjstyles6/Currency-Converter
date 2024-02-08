@@ -19,8 +19,8 @@ const CurrencyForm = () => {
   }
 
   // function without timer
-  // const fetchCurrencyData = async () => {
-  //   setIsLoading(true); 
+  // async function fetchCurrencyData() {
+  //   setIsLoading(true);
   //   try {
   //     const resp = await fetch(url);
   //     const data = await resp.json();
@@ -28,11 +28,11 @@ const CurrencyForm = () => {
   //     setResult(data.conversion_result);
   //   } catch (error) {
   //     console.error("ERROR", error);
-  //    
+
   //   } finally {
-  //     setIsLoading(false); 
+  //     setIsLoading(false);
   //   }
-  // };
+  // }
   async function fetchCurrencyData() {
     setIsLoading(true); // Start showing the loading animation
     const startTime = Date.now(); // Record the start time
