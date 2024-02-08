@@ -30,7 +30,7 @@ const CurrencyForm = () => {
   //     console.error("ERROR", error);
   //    
   //   } finally {
-  //     setIsLoading(false); // Disattiva il caricamento
+  //     setIsLoading(false); 
   //   }
   // };
   async function fetchCurrencyData() {
@@ -48,9 +48,9 @@ const CurrencyForm = () => {
       const endTime = Date.now(); // Record the end time
       const elapsedTime = endTime - startTime; // Calculate how much time has passed
 
-      if (elapsedTime < 3000) { // If less than 3000ms (3 seconds) have passed
+      if (elapsedTime < 3000) { // If less than 3000ms (3 seconds) have passed // change this if you want to change the time
         // Wait the remaining time to reach 3 seconds before turning off the loading animation
-        setTimeout(() => setIsLoading(false), 3000 - elapsedTime);
+        setTimeout(() => setIsLoading(false), 3000 - elapsedTime); // change this if you want to change the time
       } else {
         // If at least 3 seconds have passed, turn off the loading animation immediately
         setIsLoading(false);
