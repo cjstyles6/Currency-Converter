@@ -7,8 +7,8 @@ const CurrencyForm = () => {
   const [amount, setAmount] = useState();
   const [fromCode, setFromCode] = useState('USD');
   const [toCode, setToCode] = useState('NGN');
-  const [Result,setResult] = useState('00.00')
-  const [isLoading,setIsLoading] = useState(true)
+  const [Result, setResult] = useState('00.00')
+  const [isLoading, setIsLoading] = useState(false)
 
   const url = `https://v6.exchangerate-api.com/v6/d8fc1eafde902455f10e13ca/pair/${fromCode}/${toCode}/${amount}`
 
@@ -18,20 +18,51 @@ const CurrencyForm = () => {
     fetchCurrencyData()
   }
 
-  const fetchCurrencyData = async () => {
-    const resp = await fetch(url)
-    const data = await resp.json()
-    console.log(data);
-    setResult(data.conversion_result)
+  // function without timer
+  // async function fetchCurrencyData() {
+  //   setIsLoading(true);
+  //   try {
+  //     const resp = await fetch(url);
+  //     const data = await resp.json();
+  //     console.log(data);
+  //     setResult(data.conversion_result);
+  //   } catch (error) {
+  //     console.error("ERROR", error);
+
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // }
+  async function fetchCurrencyData() {
+    setIsLoading(true); // Start showing the loading animation
+    const startTime = Date.now(); // Record the start time
+    try {
+      const resp = await fetch(url);
+      const data = await resp.json();
+      console.log(data);
+      setResult(data.conversion_result);
+    } catch (error) {
+      console.error("Error fetching conversion data", error);
+      // Handle the error as necessary
+    } finally {
+      const endTime = Date.now(); // Record the end time
+      const elapsedTime = endTime - startTime; // Calculate how much time has passed
+
+      if (elapsedTime < 3000) { // If less than 3000ms (3 seconds) have passed // change this if you want to change the time
+        // Wait the remaining time to reach 3 seconds before turning off the loading animation
+        setTimeout(() => setIsLoading(false), 3000 - elapsedTime); // change this if you want to change the time
+      } else {
+        // If at least 3 seconds have passed, turn off the loading animation immediately
+        setIsLoading(false);
+      }
+    }
   }
 
-  const convertCurrency = () => {
+
+  function convertCurrency() {
     fetchCurrencyData()
   }
 
-  useEffect(() => {
-    fetchCurrencyData()
-  },[convertCurrency])
 
   return (
     <section className="flex h-screen items-center justify-center bg-blue-200">
@@ -42,10 +73,14 @@ const CurrencyForm = () => {
             Exchange Rate
           </span>
           <h1 className="mt-2 text-3xl font-bold tracking-wider">
-            {amount === undefined ? '00.00' : Math.floor(Result).toLocaleString()}
+            {isLoading ? (
+              // if u wanna change the loading spinner, go to https://daisyui.com/components/loading/ and copy the spinner u want
+              <span className="loading loading-spinner loading-lg"></span>
+            ) : (
+              amount === undefined ? '0' : Math.floor(Result).toLocaleString()
+            )}
           </h1>
         </div>
-
         <form
           action=""
           onSubmit={(e) => {
@@ -84,9 +119,8 @@ const CurrencyForm = () => {
                   ))}
                 </select>
               </div>
-
               <button className="mt-6">
-                <FaIcons.FaArrowRightArrowLeft size={30} onClick={swapCurrency}/>
+                <FaIcons.FaArrowRightArrowLeft size={30} onClick={swapCurrency} />
               </button>
 
               <div className="mt-3 flex flex-col">
@@ -107,8 +141,7 @@ const CurrencyForm = () => {
               </div>
             </div>
           </div>
-
-          <button className="mx-auto mt-5 w-full bg-blue-800 p-2 text-xl font-bold text-white" onClick={isLoading ? <h1>LOading....</h1> : convertCurrency}>
+          <button className="btn mt-5 w-full bg-blue-800 hover:bg-blue-950 p-2 text-xl font-bold text-white" onClick={convertCurrency}>
             CONVERT
           </button>
         </form>
