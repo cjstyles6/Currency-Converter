@@ -1,68 +1,23 @@
 /* eslint-disable no-unused-vars */
-import { useEffect, useState } from "react";
 import * as FaIcons from "react-icons/fa6";
 import currencyCodes from "../data";
+import { useExchange } from "../hooks/useExchange";
 
 const CurrencyForm = () => {
-  const [amount, setAmount] = useState();
-  const [fromCode, setFromCode] = useState('USD');
-  const [toCode, setToCode] = useState('NGN');
-  const [Result, setResult] = useState('00.00')
-  const [isLoading, setIsLoading] = useState(false)
+  const {
+    // use isErro to render erro alert
+    isErro,
+    isLoading,
+    exchangeResult,
+    exchangeInputs,
+    swapCurrency,
+    setExchangeInputs,
+    fetchExchangeResult,
+  } = useExchange();
 
-  const url = `https://v6.exchangerate-api.com/v6/d8fc1eafde902455f10e13ca/pair/${fromCode}/${toCode}/${amount}`
-
-  const swapCurrency = () => {
-    setFromCode(toCode)
-    setToCode(fromCode)
-    fetchCurrencyData()
-  }
-
-  // function without timer
-  // async function fetchCurrencyData() {
-  //   setIsLoading(true);
-  //   try {
-  //     const resp = await fetch(url);
-  //     const data = await resp.json();
-  //     console.log(data);
-  //     setResult(data.conversion_result);
-  //   } catch (error) {
-  //     console.error("ERROR", error);
-
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // }
-  async function fetchCurrencyData() {
-    setIsLoading(true); // Start showing the loading animation
-    const startTime = Date.now(); // Record the start time
-    try {
-      const resp = await fetch(url);
-      const data = await resp.json();
-      console.log(data);
-      setResult(data.conversion_result);
-    } catch (error) {
-      console.error("Error fetching conversion data", error);
-      // Handle the error as necessary
-    } finally {
-      const endTime = Date.now(); // Record the end time
-      const elapsedTime = endTime - startTime; // Calculate how much time has passed
-
-      if (elapsedTime < 3000) { // If less than 3000ms (3 seconds) have passed // change this if you want to change the time
-        // Wait the remaining time to reach 3 seconds before turning off the loading animation
-        setTimeout(() => setIsLoading(false), 3000 - elapsedTime); // change this if you want to change the time
-      } else {
-        // If at least 3 seconds have passed, turn off the loading animation immediately
-        setIsLoading(false);
-      }
-    }
-  }
-
-
-  function convertCurrency() {
-    fetchCurrencyData()
-  }
-
+  const changeHandler = (e) => {
+    setExchangeInputs({ ...exchangeInputs, [e.target.name]: e.target.value });
+  };
 
   return (
     <section className="flex h-screen items-center justify-center bg-blue-200">
@@ -72,17 +27,17 @@ const CurrencyForm = () => {
           <span className="font-sourceCodePro text-xl  text-gray-600">
             Exchange Rate
           </span>
-          <h1 className="mt-2 text-3xl font-bold tracking-wider">
+          <h1 className="mt-2 h-6 text-3xl font-bold tracking-wider">
             {isLoading ? (
-              // if u wanna change the loading spinner, go to https://daisyui.com/components/loading/ and copy the spinner u want
               <span className="loading loading-spinner loading-lg"></span>
+            ) : exchangeResult === undefined ? (
+              "0"
             ) : (
-              amount === undefined ? '0' : Math.floor(Result).toLocaleString()
+              exchangeResult.toLocaleString()
             )}
           </h1>
         </div>
         <form
-          action=""
           onSubmit={(e) => {
             e.preventDefault();
           }}
@@ -96,8 +51,8 @@ const CurrencyForm = () => {
                 name="amount"
                 id="amount"
                 className="rounded-sm border border-gray-400 p-1 px-2 text-3xl font-bold"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
+                value={exchangeInputs.amount}
+                onChange={changeHandler}
               />
             </div>
 
@@ -106,11 +61,10 @@ const CurrencyForm = () => {
               <div className="mt-3 flex flex-col">
                 <label htmlFor="from">From</label>
                 <select
-                  name=""
-                  id=""
-                  value={fromCode}
+                  name="fromCurrency"
+                  value={exchangeInputs.fromCurrency}
                   className="rounded-sm border border-gray-400 p-1 text-xl"
-                  onChange={(e) => setFromCode(e.target.value)}
+                  onChange={changeHandler}
                 >
                   {currencyCodes.map((item, index) => (
                     <option value={item} key={index}>
@@ -120,17 +74,20 @@ const CurrencyForm = () => {
                 </select>
               </div>
               <button className="mt-6">
-                <FaIcons.FaArrowRightArrowLeft size={30} onClick={swapCurrency} />
+                <FaIcons.FaArrowRightArrowLeft
+                  size={30}
+                  onClick={swapCurrency}
+                />
               </button>
 
               <div className="mt-3 flex flex-col">
                 <label htmlFor="to">To</label>
                 <select
-                  name=""
+                  name="toCurrency"
                   id=""
-                  value={toCode}
+                  value={exchangeInputs.toCurrency}
                   className="flex-3 rounded-sm border border-gray-400 p-1 text-xl"
-                  onChange={(e) => setToCode(e.target.value)}
+                  onChange={changeHandler}
                 >
                   {currencyCodes.map((item, index) => (
                     <option value={item} key={index}>
@@ -141,7 +98,10 @@ const CurrencyForm = () => {
               </div>
             </div>
           </div>
-          <button className="btn mt-5 w-full bg-blue-800 hover:bg-blue-950 p-2 text-xl font-bold text-white" onClick={convertCurrency}>
+          <button
+            className="btn mt-5 w-full bg-blue-800 p-2 text-xl font-bold text-white hover:bg-blue-950"
+            onClick={fetchExchangeResult}
+          >
             CONVERT
           </button>
         </form>
